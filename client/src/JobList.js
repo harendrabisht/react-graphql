@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
 
 export class JobList extends Component {
+
   render() {
     const {jobs} = this.props;
     return (
