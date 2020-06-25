@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import graphQLFetch from './graphQL';
 
 export class JobForm extends Component {
   constructor(props) {
@@ -11,8 +12,31 @@ export class JobForm extends Component {
     this.setState({[name]: value});
   }
 
-  handleClick(event) {
+  async handleClick(event) {
     event.preventDefault();
+    const { title, description } = this.state;
+    const response = await graphQLFetch({
+      query: `mutation CreateJob($inputvalue: InputData) {
+        job: createJob(input: $inputvalue) {
+          id
+          title
+          description
+          company{
+            name
+            id
+          }
+        }
+      }`,
+      variables: {
+        "inputvalue" : {
+          "companyId": "SJV0-wdOM",
+          "title": title,
+          "description": description,
+        },
+      },
+    });
+    const { job } = response;
+    this.props.history.push(`/jobs/${job.id}`);
     console.log('should post a new job:', this.state);
   }
 
