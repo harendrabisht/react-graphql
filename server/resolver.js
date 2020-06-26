@@ -12,10 +12,10 @@ const Company = {
 }
 
 const Mutation = {
-	createJob: (root, { input }) => {
-		const id = db.jobs.create(input);
+	createJob: (root, { input }, context) => {
+		const { companyId } = context.user;
+		const id = db.jobs.create({...input, companyId});
 		return db.jobs.get(id);
-
 	},
 }
 

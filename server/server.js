@@ -27,8 +27,12 @@ const typeDefs = gql(
 );
 
 const resolvers = require('./resolver');
+// add context to handle request parametes
+const context = ({ req }) => ({
+  user: req.user && db.users.get(req.user.sub),
+});
 
-const apolloServer = new ApolloServer({ typeDefs, resolvers });
+const apolloServer = new ApolloServer({ typeDefs, resolvers, context });
 apolloServer.applyMiddleware({ app, path: '/graphql' });
 
 app.post('/login', (req, res) => {

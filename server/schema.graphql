@@ -23,7 +23,6 @@ type Job {
 }
 
 input InputData {
-	companyId: ID,
 	title: String,
 	description: String,
 }
