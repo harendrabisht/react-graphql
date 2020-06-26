@@ -1,15 +1,26 @@
 import {isLoggedIn, getAccessToken } from './auth';
-import { HttpLink, ApolloClient, InMemoryCache } from 'apollo-boost';
+import { HttpLink, ApolloClient, ApolloLink, InMemoryCache } from 'apollo-boost';
 import gql from 'graphql-tag';
 
 
 const apiUrl = 'http://localhost:5000/graphql';
-
+const authLink = new ApolloLink((operation, forward) => {
+	if(isLoggedIn) {
+		operation.setContext({
+			headers: {
+				'authorization': `Bearer ${getAccessToken()}`,
+			},
+		});
+	}
+	return forward(operation);
+})
 const cache = new InMemoryCache();
-const link = new HttpLink({
-	uri: apiUrl,
-});
-
+const link = ApolloLink.from([
+	authLink,
+	new HttpLink({
+		uri: apiUrl,
+	}),
+]) 
 export const client = new ApolloClient({
 	link,
 	cache,
@@ -75,6 +86,27 @@ export const loadCompanyDetails = async (companyId) => {
 	return company;
 };
 
+export const createNewJob = async (inputvalue) => {
+	// Mutation
+	const mutation = gql`
+		mutation CreateJob($inputvalue: InputData) {
+			job: createJob(input: $inputvalue) {
+			id
+			title
+			description
+			company{
+				name
+				id
+			}
+		}
+	}`;
+
+	const response = await client.mutate({ mutation, variables: {
+		"inputvalue": inputvalue,
+	}});
+	const { data: { job } } = response;
+	return job;
+};
 
  //--------------------No more need this function ------------------//
 const graphQLFetch = async function({query, variables}) {
