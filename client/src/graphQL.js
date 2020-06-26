@@ -26,6 +26,19 @@ export const client = new ApolloClient({
 	cache,
 });
 
+const jobQuery = gql`
+	query JobQuery($jobId: ID!){
+		job(id: $jobId){
+		id
+		title
+		description
+		company{
+			id
+			name
+		}
+	}
+}`;
+
 
 export const loadJobs = async () => {
 	const query = gql`{
@@ -41,26 +54,15 @@ export const loadJobs = async () => {
 	}`;
 	const response = await client.query({
 		query,
+		fetchPolicy: 'no-cache',
 	});
 	const { data: { jobs } } = response;
 	return jobs;
 };
 
 export const loadJobDetails = async (id) => {
-	const query = gql`
-		query JobQuery($jobId: ID!){
-			job(id: $jobId){
-			id
-			title
-			description
-			company{
-				id
-				name
-			}
-		}
-	}`;
 	const response = await client.query({
-		query,
+		query: jobQuery,
 		variables: { jobId: id}
 	});
 	const { data: {job}} = response;
@@ -101,9 +103,17 @@ export const createNewJob = async (inputvalue) => {
 		}
 	}`;
 
-	const response = await client.mutate({ mutation, variables: {
-		"inputvalue": inputvalue,
-	}});
+	const response = await client.mutate({ 
+		mutation,
+		variables: { inputvalue },
+		update:(cache, { data }) => {
+			cache.writeQuery({
+				query: jobQuery,
+				variables: { jobId: data.job.id },
+				data,
+			});
+		},
+	});
 	const { data: { job } } = response;
 	return job;
 };

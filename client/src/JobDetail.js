@@ -6,10 +6,7 @@ export class JobDetail extends Component {
   state = {
     job: null,
   }
-	constructor(props) {
-		super(props);
-  }
-  
+
   async componentDidMount() {
     const { jobId } = this.props.match.params;
     const job = await loadJobDetails(jobId);

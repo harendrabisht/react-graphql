@@ -5,7 +5,6 @@ import { JobList } from './JobList';
 export class CompanyDetail extends Component {
   constructor(props) {
     super(props);
-    const {companyId} = this.props.match.params;
     this.state = {company: null};
   }
 
