@@ -29,7 +29,6 @@ export class JobForm extends Component {
       }`,
       variables: {
         "inputvalue" : {
-          "companyId": "SJV0-wdOM",
           "title": title,
           "description": description,
         },
