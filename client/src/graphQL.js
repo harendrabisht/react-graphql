@@ -26,34 +26,65 @@ export const client = new ApolloClient({
 	cache,
 });
 
-const jobQuery = gql`
-	query JobQuery($jobId: ID!){
-		job(id: $jobId){
+// Created Job Fragments
+const jobFragmants = gql`
+	fragment jobDetail on Job {
 		id
 		title
 		description
-		company{
-			id
+		company {
 			name
+			id
 		}
 	}
-}`;
+`;
+
+const creteJobMutation = gql`
+	mutation CreateJob($inputvalue: InputData) {
+		job: createJob(input: $inputvalue) {
+			...jobDetail
+		},
+	}
+	${jobFragmants}
+`;
+
+const jobQuery = gql`
+	query JobQuery($jobId: ID!){
+		job(id: $jobId){
+			...jobDetail,
+		},
+	}
+	${jobFragmants}
+`;
+
+const jobsQuery = gql`
+	query jobsQuery {
+		jobs {
+			...jobDetail
+		},
+	}
+	${jobFragmants}
+`;
+
+const companyQuery = gql`
+	query CompanyQuery($id: ID!) {
+		company(id: $id){
+			id
+			name
+			description
+			jobs{
+				id
+				title
+			}
+		}
+	}
+`;
 
 
 export const loadJobs = async () => {
-	const query = gql`{
-		jobs {
-		  id
-		  title
-		  description
-		  company {
-			id
-			name
-		  }
-		}
-	}`;
+
 	const response = await client.query({
-		query,
+		query: jobsQuery,
 		fetchPolicy: 'no-cache',
 	});
 	const { data: { jobs } } = response;
@@ -70,41 +101,14 @@ export const loadJobDetails = async (id) => {
 };
 
 export const loadCompanyDetails = async (companyId) => {
-	const query = gql`
-		query CompanyQuery($id: ID!) {
-			company(id: $id){
-			id
-			name
-			description
-			jobs{
-				id
-				title
-			}
-		}
-	}`;
-	
-	const response = await client.query({ query, variables: {id: companyId}});
+	const response = await client.query({ query: companyQuery, variables: {id: companyId}});
 	const { data: {company}} = response;
 	return company;
 };
 
 export const createNewJob = async (inputvalue) => {
-	// Mutation
-	const mutation = gql`
-		mutation CreateJob($inputvalue: InputData) {
-			job: createJob(input: $inputvalue) {
-			id
-			title
-			description
-			company{
-				name
-				id
-			}
-		}
-	}`;
-
 	const response = await client.mutate({ 
-		mutation,
+		mutation: creteJobMutation,
 		variables: { inputvalue },
 		update:(cache, { data }) => {
 			cache.writeQuery({
@@ -118,25 +122,3 @@ export const createNewJob = async (inputvalue) => {
 	return job;
 };
 
- //--------------------No more need this function ------------------//
-const graphQLFetch = async function({query, variables}) {
-	const requestHeader = {
-		'content-type': 'application/json'
-	};
-	if(isLoggedIn) {
-		requestHeader['authorization'] = `Bearer ${getAccessToken()}`;
-	}
-
-	const response = await fetch(apiUrl, {
-      method: 'POST',
-      headers: requestHeader,
-      body: JSON.stringify({
-        query,
-        variables,
-	  }),
-	});
-	const responseData = await response.json();
-	return responseData.data;
-}
-
-export default graphQLFetch;
