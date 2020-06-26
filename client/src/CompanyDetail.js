@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import graphQLFetch from './graphQL';
+import { loadCompanyDetails } from './graphQL';
 import { JobList } from './JobList';
 
 export class CompanyDetail extends Component {
@@ -11,24 +11,10 @@ export class CompanyDetail extends Component {
 
   async componentDidMount() {
     const {companyId} = this.props.match.params;
-    const response = await graphQLFetch({
-      query: `query CompanyQuery($id: ID!) {
-        company(id: $id){
-          id
-          name
-          description
-          jobs{
-            id
-            title
-          }
-        }
-      }`,
-      variables: {id: companyId}
-    });
-    const { company } = response;
+    const company = await loadCompanyDetails(companyId);
     this.setState({
       company,
-    })
+    });
   }
 
   render() {

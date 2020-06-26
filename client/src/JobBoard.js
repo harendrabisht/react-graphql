@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { JobList } from './JobList';
+import { loadJobs } from './graphQL';
 // const { jobs } = require('./fake-data');
 
 export class JobBoard extends Component {
@@ -8,28 +9,7 @@ export class JobBoard extends Component {
   }
   async componentDidMount() {
 
-    const resposneData = await fetch('http://localhost:5000/graphql', {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({
-        query: `{
-          jobs {
-            id
-            title
-            description
-            company {
-              id
-              name
-            }
-          }
-        }`
-      })
-    });
-
-    const response = await resposneData.json();
-    const { data: { jobs } } = response;
+    const jobs = await loadJobs();
     this.setState({
       jobs,
     });

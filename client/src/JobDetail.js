@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Link } from 'react-router-dom';
-import { jobs } from './fake-data';
+import { loadJobDetails } from './graphQL';
 
 export class JobDetail extends Component {
   state = {
@@ -12,29 +12,7 @@ export class JobDetail extends Component {
   
   async componentDidMount() {
     const { jobId } = this.props.match.params;
-    const response = await fetch('http://localhost:5000/graphql', {
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json'
-      },
-      body: JSON.stringify({
-        query: `query JobQuery($jobId: ID!){
-          job(id: $jobId){
-            id
-            title
-            description
-            company{
-              id
-              name
-            }
-          }
-        }`,
-        variables: {jobId}
-      }),
-    });
-
-    const responseData = await response.json();
-    const { job } = responseData.data;
+    const job = await loadJobDetails(jobId);
     this.setState({
       job,
     });
